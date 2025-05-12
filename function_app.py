@@ -11,13 +11,13 @@ def convert(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Currency conversion function called.')
 
     # Get the "amount" parameter from query or body
-    amount_str = req.params.get('amount')
+    amount_str = req.params.get('Euro')
     if not amount_str:
         try:
             req_body = req.get_json()
         except ValueError:
             req_body = {}
-        amount_str = req_body.get('amount')
+        amount_str = req_body.get('Euro')
 
     # Try to convert and respond
     try:
@@ -29,6 +29,6 @@ def convert(req: func.HttpRequest) -> func.HttpResponse:
         )
     except (TypeError, ValueError):
         return func.HttpResponse(
-            "Please provide a valid numeric 'amount' in the query string or JSON body.",
+            "Please provide a valid numeric 'Euro' in the query string or JSON body.",
             status_code=400
         )
