@@ -3,23 +3,32 @@ import logging
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
-@app.route(route="HttpExample")
-def HttpExample(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Python HTTP trigger function processed a request.')
+# Fixed exchange rate (example: 1 EUR = 1.1 USD)
+EXCHANGE_RATE = 1.1
 
-    name = req.params.get('name')
-    if not name:
+@app.route(route="convert")
+def convert(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Currency conversion function called.')
+
+    # Get the "amount" parameter from query or body
+    amount_str = req.params.get('amount')
+    if not amount_str:
         try:
             req_body = req.get_json()
         except ValueError:
-            pass
-        else:
-            name = req_body.get('name')
+            req_body = {}
+        amount_str = req_body.get('amount')
 
-    if name:
-        return func.HttpResponse(f"Hello, {name}. This HTTP triggered function executed successfully.")
-    else:
+    # Try to convert and respond
+    try:
+        amount_eur = float(amount_str)
+        amount_usd = amount_eur * EXCHANGE_RATE
         return func.HttpResponse(
-             "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
-             status_code=200
+            f"{amount_eur:.2f} EUR = {amount_usd:.2f} USD",
+            status_code=200
+        )
+    except (TypeError, ValueError):
+        return func.HttpResponse(
+            "Please provide a valid numeric 'amount' in the query string or JSON body.",
+            status_code=400
         )
